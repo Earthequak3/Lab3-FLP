@@ -1,10 +1,13 @@
-
 module Parsing where
 
-import Exp
+import Exp ( ComplexExp(CX, CLam), Var )
 import Lab2
+    ( endOfInput, identifier, satisfy, whiteSpace, Parser(apply) )
 import Control.Applicative (some, many, (<|>))
 import Data.Char (isAlpha, isAlphaNum)
+
+
+
 
 parseFirst :: Parser a -> String -> Maybe a
 parseFirst p s
@@ -12,23 +15,40 @@ parseFirst p s
       [] -> Nothing
       (a,_):_ -> Just a
 
+
+haskellId::Parser String
+haskellId = identifier(satisfy isAlpha) (satisfy isAlpha)
+
 var :: Parser Var
-var = undefined
+var = var <$> haskellId
 -- >>> parseFirst var "b is a var"
 -- Just (Var {getVar = "b"})
 
 varExp :: Parser ComplexExp
-varExp = undefined
+varExp = CX <$> var
 -- >>> parseFirst varExp "b is a var"
 -- Just (CX (Var {getVar = "b"}))
 
 lambdaExp :: Parser ComplexExp
-lambdaExp = undefined
+lambdaExp = do
+  symbol "\\"
+  x <- var
+  symbol "->"
+  e <- expr
+  return $CLam x e
+
 -- >>> parseFirst lambdaExp "\\x -> x"
 -- Just (CLam (Var {getVar = "x"}) (CX (Var {getVar = "x"})))
 
 letExp :: Parser ComplexExp
-letExp = undefined
+letExp = do
+  symbol "let"
+  x <- var
+  symbol ":="
+  e1 <-expr
+  symbol "in"
+  e2 <- expr
+  return $ let x e1 e2
 -- >>> parseFirst letExp "let x := y in z"
 -- Just (Let (Var {getVar = "x"}) (CX (Var {getVar = "y"})) (CX (Var {getVar = "z"})))
 

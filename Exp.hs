@@ -1,4 +1,3 @@
-
 module Exp where
 
 import Numeric.Natural
